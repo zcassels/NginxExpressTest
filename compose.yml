@@ -1,0 +1,13 @@
+services:
+  nginx:
+    image: nginx
+    volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+    - "8080:80"
+    environment:
+    - NGINX_PORT=80
+  nodejs:
+    image: node-test
+    ports:
+    - "3000:3000"
