@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nodetest
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nodetest
+  namespace: nodetest
+  labels:
+    app: nodetest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodetest
+  template:
+    metadata:
+      labels:
+        app: nodetest
+    spec:
+      containers:
+        - name: nodetest
+          image: docker.meeples-local.duckdns.org/nodetestapp:0.0.1
+          ports:
+            - name: web
+              containerPort: 3000
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: nodetest
+  name: nodetest
+spec:
+  ports:
+    - port: 8080
+      targetPort: web
+  selector:
+    app: nodetest
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nodetest-ingress
+  namespace: nodetest
+spec:
+  rules:
+  - host: nodetest.apps.meeples-local.duckdns.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodetest
+            port:
+              number: 8080
+
+
+--- 
+
+# whoami.apps.meeples-local.duckdns.org
+# whoami.apps.local
+
+# apiVersion: traefik.io/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: nodetest-ingress
+#   namespace: nodetest
+# spec:
+#   entryPoints:
+#     - web
+#   routes:
+#   - match: Host(`nodetest.apps.meeples-local.duckdns.org`)
+#     kind: Rule
+#     services:
+#     - name: nodetest
+#       port: 8080
